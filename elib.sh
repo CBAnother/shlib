@@ -108,4 +108,38 @@ install_nginx() {
 
 #endregion nginx
 
+#region rsync
+
+# Examples:
+# is_exist=$(is_rsync_exist)
+# if [[ $is_exist -eq 0 ]]; then
+#     install_rsync
+# else
+#     echo "rsync already installed"
+# fi
+
+is_rsync_exist() {
+    local rsync_cmd=$(which rsync)
+    if [ -z "$rsync_cmd" ]; then
+        echo 0
+        return
+    fi
+
+    echo 1
+    return
+}
+
+install_rsync() {
+    # Only support ubuntu
+
+    local is_exist=$(is_rsync_exist)
+    if [ $is_exist -eq 0 ]; then
+        echo "install rsync..."
+        sudo apt install rsync -y
+        echo "already installed rsync"
+    fi
+}
+
+#endregion rsync
+
 #endregion env
