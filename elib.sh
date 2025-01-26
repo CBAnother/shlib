@@ -143,3 +143,90 @@ install_rsync() {
 #endregion rsync
 
 #endregion env
+
+
+
+#region filesystem
+
+list_files() {
+    # list all files in the dir
+    # 
+    # Args:
+    #   $1: dir
+    #   [option] $2: file type, default is all
+    #       *: all
+    #   [option] $3: is recursive, default is false
+    #       true: recursive
+    #       false: not recursive
+
+    local dir=$1
+    local file_type=$2
+    local is_recursive=$3
+
+    if [ -z "$file_type" ]; then
+        file_type="*"
+    fi
+
+    if [ -z "$is_recursive" ]; then
+        is_recursive=false
+    fi
+
+    if [ "$is_recursive" = true ]; then
+        find $dir -name "*.$file_type"
+    else
+        ls $dir/*.$file_type
+    fi
+}
+
+print_files() {
+    # print all files in the dir
+    # 
+    # Args:
+    #   $1: dir
+    #   [option] $2: file type, default is all
+    #       *: all
+    #   [option] $3: is recursive, default is false
+    #       true: recursive
+    #       false: not recursive
+
+    local files=$(list_files $1 $2 $3)
+    local no=1
+    for file in $files; do
+        echo "$no: $file"
+        no=$((no+1))
+    done
+}
+
+count_files() {
+    # count files in the dir
+    # 
+    # Args:
+    #   $1: dir
+    #   [option] $2: file type, default is all
+    #       *: all
+    #   [option] $3: is recursive, default is false
+    #       true: recursive
+    #       false: not recursive
+
+    local dir=$1
+    if [ -z "$dir" ]; then
+        echo 0
+        return
+    fi
+
+    # check dir exist
+    if [ ! -d "$dir" ]; then
+        echo 0
+        return
+    fi
+
+    local files=$(list_files $1 $2 $3)
+    local count=0
+    for file in $files; do
+        count=$((count+1))
+    done
+
+    echo $count
+}
+
+#endregion filesystem
