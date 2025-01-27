@@ -72,7 +72,7 @@ install_docker_compose() {
 }
 
 
-is_docker_compose_exist() {
+is_docker_compose_config_exist() {
     # check docker-compose config file exist
     # Args:
     #   $1: dir
