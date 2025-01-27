@@ -71,6 +71,34 @@ install_docker_compose() {
     fi
 }
 
+
+is_docker_compose_exist() {
+    # check docker-compose config file exist
+    # Args:
+    #   $1: dir
+
+    local dir=$1
+    if [ -z "$dir" ]; then
+        echo 0
+        return
+    fi
+
+    # check dir exist
+    if [ ! -d "$dir" ]; then
+        echo 0
+        return
+    fi
+
+    local docker_compose_file1="$dir/docker-compose.yml"
+    local docker_compose_file2="$dir/docker-compose.yaml"
+    if [ -f "$docker_compose_file1" ] || [ -f "$docker_compose_file2" ]; then
+        echo 1
+        return
+    fi
+
+    echo 0
+}
+
 #endregion docker
 
 #region nginx
