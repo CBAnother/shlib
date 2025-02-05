@@ -255,6 +255,33 @@ docker_is_container_running() {
     fi
 }
 
+docker_list_containers() {
+    # list all containers
+    #
+    # Args:
+    #   $1: only running, default is false
+    #       true: only running
+    #       false: all
+    #
+    # Return:
+    #  container names
+    # 
+    # Example:
+    # containers=$(docker_list_containers)
+    # for container in $containers; do
+    #     echo "container name: $container"
+    # done
+
+    local only_running=$1
+    local format="{{.Names}}"
+
+    if [[ "$only_running" == "true" ]]; then
+        docker ps --format "$format"
+    else
+        docker ps -a --format "$format"
+    fi
+}
+
 #endregion docker helper
 
 
