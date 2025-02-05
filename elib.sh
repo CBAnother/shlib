@@ -173,6 +173,90 @@ install_rsync() {
 #endregion env
 
 
+#region docker helper
+
+docker_is_container_exist() {
+    # check docker container exist
+    # 
+    # Args:
+    #   $1: container name
+    #
+    # Return:
+    #   0: not exist
+    #   1: exist
+    #
+    # Example:
+    # is_exist=$(docker_is_container_exist "nginx")
+    # if [[ $is_exist -eq 1 ]]; then
+    #     echo "nginx exist"
+    # fi
+    
+    local name=$1
+    local container_name
+
+    container_name=$(docker ps -a --filter "name=$name" --format "{{.Names}}")
+
+    if [[ -z "$container_name" ]]; then
+        echo 0
+        return 
+    else
+        # 使用 bash 内建的变量比较，确保完全匹配
+        if [[ "$container_name" == "$name" ]]; then
+            echo 1
+            return 
+        else
+            echo 0
+            return 
+        fi
+    fi
+}
+
+docker_is_container_running() {
+    # check docker container is running
+    # if container not exist, return 0
+    # 
+    # Args:
+    #   $1: container name
+    # 
+    # Return:
+    #   0: not running
+    #   1: running
+    # 
+    # Example:
+    # is_running=$(docker_is_container_running "nginx")
+    # if [[ $is_running -eq 1 ]]; then
+    #     echo "nginx is running"
+    # fi
+    
+    local name=$1
+    local container_name
+    
+    local exist=$(docker_is_container_exist $name)
+    if [[ exist -eq 0 ]]; then
+        echo 0
+        return 
+    fi
+
+    # 仅查询正在运行的容器
+    container_name=$(docker ps --filter "name=$name" --format "{{.Names}}")
+
+    if [[ -z "$container_name" ]]; then
+        echo 0
+        return 
+    else
+        # 确保名称完全匹配
+        if [[ "$container_name" == "$name" ]]; then
+            echo 1
+            return 
+        else
+            echo 0
+            return 
+        fi
+    fi
+}
+
+#endregion docker helper
+
 
 #region filesystem
 
