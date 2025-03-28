@@ -405,15 +405,17 @@ count_files() {
 
 #region log
 
-log() {
-    # show a log message
-    # Args:
-    #   $1: log level (INFO, WARN, ERROR, DEBUG)
-    #   $2: log message
-    # Examples:
-    #   log INFO "This is an info message"
-    #   log WARN "This is a warning message"
+# default INFO
+LOG_LEVEL=1
 
+declare -A LOG_LEVELS=(
+    ["DEBUG"]=0
+    ["INFO"]=1
+    ["WARN"]=2
+    ["ERROR"]=3
+)
+
+log() {
     local RED='\033[0;31m'
     local GREEN='\033[0;32m'
     local YELLOW='\033[0;33m'
@@ -424,6 +426,11 @@ log() {
     shift
     local msg="$@"
     local timestamp=$(date "+%Y-%m-%d %H:%M:%S")
+
+    # 检查日志级别，如果当前级别 < 设定的 LOG_LEVEL，则不输出
+    if [[ ${LOG_LEVELS[$level]} -lt $LOG_LEVEL ]]; then
+        return
+    fi
 
     case "$level" in
         INFO)
