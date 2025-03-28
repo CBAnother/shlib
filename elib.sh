@@ -1,3 +1,35 @@
+#!/bin/bash
+
+#region persistence
+
+# copy this code to your script
+
+# SCRIPT_NAME="elib.sh"
+# LOCAL_DIR="$HOME/.local/elib"
+# LOCAL_SH_PATH="$LOCAL_DIR/$SCRIPT_NAME"
+# GITHUB_URL="https://raw.githubusercontent.com/CBAnother/shlib/refs/heads/main/$SCRIPT_NAME"
+# VERSION_URL="https://raw.githubusercontent.com/CBAnother/shlib/refs/heads/main/version.txt"
+# LOCAL_VERISON_FILE="$LOCAL_DIR/version.txt"
+
+# mkdir -p $LOCAL_DIR
+
+# REMOTE_VERSION=$(curl -fsSL "$VERSION_URL" || echo "unknown")
+# LOCAL_VERSION=$(cat "$LOCAL_VERISON_FILE" 2>/dev/null || echo "unknown")
+
+# if [[ ! -f "$LOCAL_SH_PATH" || "$REMOTE_VERSION" != "$LOCAL_VERSION" ]]; then
+#     echo "Updating $SCRIPT_NAME to version $REMOTE_VERSION..."
+#     curl -fsSL "$GITHUB_URL" -o "$LOCAL_SH_PATH"
+#     chmod +x "$LOCAL_SH_PATH"
+#     echo "$REMOTE_VERSION" > "$LOCAL_VERISON_FILE"
+# else
+#     echo "$SCRIPT_NAME is up to date (version $LOCAL_VERSION)"
+# fi
+
+# source "$LOCAL_SH_PATH"
+
+#endregion persistence
+
+
 #region env
 
 #region docker
@@ -369,3 +401,47 @@ count_files() {
 }
 
 #endregion filesystem
+
+
+#region log
+
+log() {
+    # show a log message
+    # Args:
+    #   $1: log level (INFO, WARN, ERROR, DEBUG)
+    #   $2: log message
+    # Examples:
+    #   log INFO "This is an info message"
+    #   log WARN "This is a warning message"
+
+    local RED='\033[0;31m'
+    local GREEN='\033[0;32m'
+    local YELLOW='\033[0;33m'
+    local BLUE='\033[0;34m'
+    local NC='\033[0m' # No Color
+
+    local level=$1
+    shift
+    local msg="$@"
+    local timestamp=$(date "+%Y-%m-%d %H:%M:%S")
+
+    case "$level" in
+        INFO)
+            echo -e "${GREEN}[INFO] ${timestamp} - ${msg}${NC}"
+            ;;
+        WARN)
+            echo -e "${YELLOW}[WARN] ${timestamp} - ${msg}${NC}"
+            ;;
+        ERROR)
+            echo -e "${RED}[ERROR] ${timestamp} - ${msg}${NC}"
+            ;;
+        DEBUG)
+            echo -e "${BLUE}[DEBUG] ${timestamp} - ${msg}${NC}"
+            ;;
+        *)
+            echo -e "[UNKNOWN] ${timestamp} - ${msg}"
+            ;;
+    esac
+}
+
+#endregion log
