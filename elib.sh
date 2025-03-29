@@ -452,18 +452,67 @@ count_files() {
 #region INI
 
 ini_get() {
+    # read ini file
+    #  
+    # Args:
+    #   $1: ini file
+    #   $2: section
+    #   $3: property
+    #
+    # Example:
+    #   if the file content is:
+    #       [Global]
+    #       ip = 127.0.0.1
+    #   
+    #   ip=$(ini_get "config.ini" "Global" "ip")
+    #   echo "ip: $ip"
+    # 
+    #   the output is:
+    #       ip: 127.0.0.1
+
     local INI_FILE=$1
     local SECTION=$2
     local PROPERTY=$3
 
     if [ -f "$INI_FILE" ]; then
-        awk -F '=' '/\['$SECTION'\]/ {flag=1; next} /\[.+\]/ {flag=0} flag {gsub(/^ *| *$/, "", $1); gsub(/^ *| *$/, "", $2); if ($1~/'$PROPERTY'/) print $2}' $INI_FILE
+        awk -F '=' '
+            /\['$SECTION'\]/ {
+                flag=1
+                next
+            }
+            /\[.+\]/ {
+                flag=0
+            }
+            flag {
+                gsub(/^ *| *$/, "", $1)
+                gsub(/^ *| *$/, "", $2)
+                if ($1 == "'$PROPERTY'") {
+                    print $2
+                }
+            }
+        ' $INI_FILE
     else
         echo ""
     fi
 }
 
 ini_set() {
+    # write ini file
+    # 
+    # Args:
+    #   $1: ini file
+    #   $2: section
+    #   $3: property
+    #   $4: value
+    # 
+    # Example:
+    #   ini_set "config.ini" "Global" "ip" "127.0.0.1"
+    # 
+    #   the file content
+    #       [Global]
+    #       ip = 127.0.0.1
+    # 
+
     local INI_FILE=$1
     local SECTION=$2
     local PROPERTY=$3
