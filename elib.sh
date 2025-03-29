@@ -73,8 +73,6 @@ else
     echo "$SCRIPT_NAME is up to date (version $LOCAL_VERSION)"
 fi
 
-source "$LOCAL_PATH"
-
 #endregion persistence
 
 
