@@ -2,30 +2,78 @@
 
 #region persistence
 
-# copy this code to your script
+SCRIPT_NAME="elib.sh"
+TIMEOUT=1
+LOCAL_DIR="$HOME/.local/elib"
+LOCAL_PATH="$LOCAL_DIR/$SCRIPT_NAME"
 
-# SCRIPT_NAME="elib.sh"
-# LOCAL_DIR="$HOME/.local/elib"
-# LOCAL_SH_PATH="$LOCAL_DIR/$SCRIPT_NAME"
-# GITHUB_URL="https://raw.githubusercontent.com/CBAnother/shlib/refs/heads/main/$SCRIPT_NAME"
-# VERSION_URL="https://raw.githubusercontent.com/CBAnother/shlib/refs/heads/main/version.txt"
-# LOCAL_VERISON_FILE="$LOCAL_DIR/version.txt"
+fetch_elib_verison() {
 
-# mkdir -p $LOCAL_DIR
+    local urls=(
+        "github=https://raw.githubusercontent.com/CBAnother/shlib/refs/heads/main/version.txt"
+        "gitee=https://gitee.com/wwwmwwwmwwwmwwwm/shlib/raw/main/version.txt"
+    )
 
-# REMOTE_VERSION=$(curl -fsSL "$VERSION_URL" || echo "unknown")
-# LOCAL_VERSION=$(cat "$LOCAL_VERISON_FILE" 2>/dev/null || echo "unknown")
+    for url in "${urls[@]}"; do
+        local name="${url%%=*}"
+        local url="${url#*=}"
+        local version=$(curl -fsSL --connect-timeout $TIMEOUT --max-time $TIMEOUT "$url" 2>/dev/null || echo "unknown")
+        if [[ "$version" != "unknown" ]]; then
+            echo "$version"
+            return
+        fi
+    done
 
-# if [[ ! -f "$LOCAL_SH_PATH" || "$REMOTE_VERSION" != "$LOCAL_VERSION" ]]; then
-#     echo "Updating $SCRIPT_NAME to version $REMOTE_VERSION..."
-#     curl -fsSL "$GITHUB_URL" -o "$LOCAL_SH_PATH"
-#     chmod +x "$LOCAL_SH_PATH"
-#     echo "$REMOTE_VERSION" > "$LOCAL_VERISON_FILE"
-# else
-#     echo "$SCRIPT_NAME is up to date (version $LOCAL_VERSION)"
-# fi
+    echo "unknown"
+}
 
-# source "$LOCAL_SH_PATH"
+fetch_elib() {
+    local urls=(
+        "github=https://raw.githubusercontent.com/CBAnother/shlib/refs/heads/main/$SCRIPT_NAME"
+        "gitee=https://gitee.com/wwwmwwwmwwwmwwwm/shlib/raw/main/$SCRIPT_NAME"
+    )
+
+    for url in "${urls[@]}"; do
+        local name="${url%%=*}"
+        local url="${url#*=}"
+
+        if curl -fsSL --connect-timeout $TIMEOUT --max-time $TIMEOUT "$url" -o "$LOCAL_PATH" 2>/dev/null; then
+            chmod +x "$LOCAL_PATH"
+            echo "$name"
+            return 
+        fi
+    done
+
+    echo "unknown"
+}
+
+LIB_VERSION=$(fetch_elib_verison)
+LOCAL_VERSION=$(cat "$LOCAL_DIR/version.txt" 2>/dev/null || echo "unknown")
+
+if [[ "$LIB_VERSION" == "unknown" ]]; then
+    echo "Failed to fetch version from all sources."
+    exit 1
+fi
+
+if [[ "$LOCAL_VERSION" == "unknown" || "$LIB_VERSION" != "$LOCAL_VERSION" ]]; then
+    echo "Updating $SCRIPT_NAME to version $LIB_VERSION..."
+
+    # download lib
+    mkdir -p "$LOCAL_DIR"
+    SCRIPT_SOURUCE=$(fetch_elib)
+
+    if [[ "$SCRIPT_SOURUCE" == "unknown" ]]; then
+        echo "Failed to download $SCRIPT_NAME from all sources."
+        exit 1
+    fi
+
+    echo "$LIB_VERSION" > "$LOCAL_DIR/version.txt"
+    echo "Downloaded $SCRIPT_NAME from $SCRIPT_SOURUCE"
+else
+    echo "$SCRIPT_NAME is up to date (version $LOCAL_VERSION)"
+fi
+
+source "$LOCAL_PATH"
 
 #endregion persistence
 
