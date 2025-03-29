@@ -449,6 +449,58 @@ count_files() {
 #endregion filesystem
 
 
+#region INI
+
+ini_get() {
+    local INI_FILE=$1
+    local SECTION=$2
+    local PROPERTY=$3
+
+    if [ -f "$INI_FILE" ]; then
+        awk -F '=' '/\['$SECTION'\]/ {flag=1; next} /\[.+\]/ {flag=0} flag {gsub(/^ *| *$/, "", $1); gsub(/^ *| *$/, "", $2); if ($1~/'$PROPERTY'/) print $2}' $INI_FILE
+    else
+        echo ""
+    fi
+}
+
+ini_set() {
+    local INI_FILE=$1
+    local SECTION=$2
+    local PROPERTY=$3
+    local VALUE=$4
+
+    if [ -f "$INI_FILE" ]; then
+        local content=$(ini_get "$INI_FILE" "$SECTION" "$PROPERTY")
+        
+        if [ -n "$content" ]; then
+            # already exist content, rpelace it
+            local newContent=$(awk -F '=' -v VALUE="$VALUE" -v PROPERTY="$PROPERTY" -v SECTION="$SECTION" ' /\['$SECTION'\]/ { flag = 1; print "[" SECTION "]"; next; } /\[.+\]/ {flag=0} { gsub(/^ *| *$/, "", $1); gsub(/^ *| *$/, "", $2); if ( $1 ~ /^\[/ || $1 == "" ) { print $1; next; } if ( $1 == PROPERTY && flag == 1) { print PROPERTY " = " VALUE } else { print $1 " = " $2 } }' "$INI_FILE")
+            echo "$newContent" > "$INI_FILE"
+        else
+            # Configuration not found, add a new one
+            # firstly, check SECTION is exist
+            local isExist=$(awk -v "SECTION=$SECTION" '/\['$SECTION'\]/ { print "exist"; exit; } ' "$INI_FILE")
+
+            if [ -n "$isExist" ]; then
+                # exist, add to first
+                local newContent=$(awk -F '=' -v VALUE="$VALUE" -v PROPERTY="$PROPERTY" -v SECTION="$SECTION" ' /\['$SECTION'\]/ { flag=1; print "[" SECTION "]"; print PROPERTY " = " VALUE; next; } { gsub(/^ *| *$/, "", $1); gsub(/^ *| *$/, "", $2); if ( $1 ~ /^\[/ || $1 == "" ) { print $1; next } if ( $1 == PROPERTY && flag == 1) { print PROPERTY " = " VALUE } else { print $1 " = " $2 } }' "$INI_FILE")
+                echo "$newContent" > "$INI_FILE"
+            else
+                # not exist, add section and value
+                echo "" >> "$INI_FILE"
+                echo "[$SECTION]" >> "$INI_FILE"
+                echo "$PROPERTY = $VALUE" >> "$INI_FILE"
+            fi
+        fi
+    else
+        echo "[$SECTION]" > "$INI_FILE"
+        echo "$PROPERTY = $VALUE" >> "$INI_FILE"
+    fi
+}
+
+#endregion INI
+
+
 #region log
 
 # default INFO
