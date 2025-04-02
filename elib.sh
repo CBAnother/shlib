@@ -446,6 +446,31 @@ count_files() {
     echo $count
 }
 
+create_temp_dir() {
+    # create temp dir, default format is "<prefix>_YYYYMMDD_HHMMSS"
+    # 
+    # Args:
+    #   $1: prefix, if not set, default is "temp"
+    # 
+    # Returns:
+    #   temp dir name, if error, return ""
+
+    local prefix=$1
+    if [[ -z "$prefix" ]]; then
+        prefix="temp"
+    fi
+
+    local current_date=$(date +"%Y%m%d_%H%M%S")
+    local temp_dir="$prefix_$current_date"
+    
+    # make dir, if error echo "", or echo dirname
+    if mkdir "$temp_dir" 2>/dev/null; then
+        echo "$temp_dir"
+    else
+        echo ""
+    fi
+}
+
 #endregion filesystem
 
 
